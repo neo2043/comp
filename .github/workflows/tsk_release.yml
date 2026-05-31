@@ -128,7 +128,7 @@ jobs:
         run: |
           cd ${{ github.workspace }}
           pwd
-          tree
+          tree /F
 
       - name: tree
         if: matrix.os == 'linux'
@@ -142,7 +142,7 @@ jobs:
         run: |
           cd ${{ github.workspace }}
           pwd
-          tree /F
+          tree
 
       # # --- Packaging ---
       # - name: Package Binaries
