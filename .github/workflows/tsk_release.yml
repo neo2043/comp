@@ -48,34 +48,16 @@ jobs:
             vs_arch: ARM64
 
     steps:
-      # - name: Checkout Code
-      #   if: matrix.os != 'windows'
-      #   uses: actions/checkout@v4
-      #   with:
-      #     repository: sleuthkit/sleuthkit
-      #     ref: ${{ inputs.ref }}
-      #     submodules: recursive
-
       - name: Checkout Code
-        # if: matrix.os == 'windows'
         uses: actions/checkout@v6
 
       - name: Checkout Code
-        # if: matrix.os == 'windows'
         uses: actions/checkout@v6
         with:
           path: "${{ github.workspace }}/tsk"
           repository: sleuthkit/sleuthkit
           ref: ${{ inputs.ref }}
           submodules: recursive
-      
-      # - name: Apply MSBuild fix patch
-      #   # if: matrix.os == 'windows'
-      #   working-directory: "${{ github.workspace }}/tsk"           # Sets the base directory for this step
-      #   run: |
-      #     pwd
-      #     tree /F
-      #     git apply ../fix-msbuild.patch
 
       # --- Dependency Installation ---
       - name: Install Linux Dependencies
@@ -97,6 +79,14 @@ jobs:
           iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
           choco install nuget.commandline
           choco install ant --ignore-dependencies
+
+      - name: Apply MSBuild fix patch
+        # if: matrix.os == 'windows'
+        working-directory: "${{ github.workspace }}/tsk"           # Sets the base directory for this step
+        run: |
+          pwd
+          tree
+          # git apply ../fix-msbuild.patch
 
       # # --- Build POSIX (Linux/macOS) ---
       # - name: Build POSIX
