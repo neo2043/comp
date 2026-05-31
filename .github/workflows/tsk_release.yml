@@ -1,0 +1,149 @@
+name: TSK Release Build
+
+on:
+  workflow_dispatch: # Manual trigger
+      inputs:
+        ref:
+          description: "Branch or tag"
+          type: string
+          required: true
+          default: "sleuthkit-4.15.0"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: ${{ matrix.os }}-${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # --- Linux ---
+          - os: linux
+            arch: x86_64
+            runner: ubuntu-latest
+          - os: linux
+            arch: aarch64
+            runner: ubuntu-24.04-arm # Native GitHub ARM runner
+
+          # --- macOS ---
+          - os: macos
+            arch: x86_64
+            runner: macos-26-intel
+          - os: macos
+            arch: aarch64
+            runner: macos-26 # Apple Silicon
+
+          # --- Windows ---
+          - os: windows
+            arch: x86_64
+            runner: windows-2025
+            vs_arch: x64
+          - os: windows
+            arch: aarch64
+            runner: windows-11-arm
+            vs_arch: ARM64
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          repository: git@github.com:sleuthkit/sleuthkit.git
+          ref: ${{ inputs.ref }}
+          submodules: recursive
+
+      # --- Dependency Installation ---
+      - name: Install Linux Dependencies
+        if: matrix.os == 'linux'
+        run: |
+          sudo apt update
+          sudo apt install -y tree ant autoconf automake g++ libssl-dev afflib-tools libewf-dev libqcow-dev libvhdi-dev libvmdk-dev libmagic-dev libtool make pkg-config zlib1g-dev wget
+
+      - name: Install macOS Dependencies
+        if: matrix.os == 'macos'
+        run: |
+          brew install automake autoconf libtool libewf libmagic sqlite tree
+
+      - name: Install Chocolatey
+        if: matrix.os == 'windows'
+        run: |
+          Set-ExecutionPolicy Bypass -Scope Process -Force;
+          [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072;
+          iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+          choco install nuget.commandline
+          choco install ant --ignore-dependencies
+
+      # --- Build POSIX (Linux/macOS) ---
+      - name: Build POSIX
+        if: matrix.os != 'windows'
+        run: |
+          ./bootstrap
+          ./configure --disable-java --prefix=$(pwd)/install_dir
+          make -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)
+          make install
+
+      # --- Build Windows ---
+      - name: Build Windows
+        if: matrix.os == 'windows'
+        shell: pwsh
+        run: |
+          # Use TSK's provided build script
+          # Note: We pass the architecture to MSBuild via the python wrapper if supported, 
+          # otherwise, we trigger MSBuild directly.
+          python win32/updateAndBuildAll.py -m
+          
+          mkdir install_dir
+          copy win32/Release/*.exe install_dir/
+          copy win32/Release/*.dll install_dir/
+
+      - name: tree
+        if: matrix.os == 'windows'
+        run: |
+          cd win32/Release
+          tree
+
+      - name: tree
+        if: matrix.os == 'linux'
+        run: |
+          cd install_dir
+          tree
+
+      # # --- Packaging ---
+      # - name: Package Binaries
+      #   shell: bash
+      #   run: |
+      #     PACKAGE_NAME="sleuthkit-${{ matrix.os }}-${{ matrix.arch }}"
+      #     mkdir -p $PACKAGE_NAME
+          
+      #     if [ "${{ matrix.os }}" == "windows" ]; then
+      #       cp install_dir/* $PACKAGE_NAME/
+      #       zip -r "${PACKAGE_NAME}.zip" $PACKAGE_NAME/
+      #       echo "ASSET_PATH=${PACKAGE_NAME}.zip" >> $GITHUB_ENV
+      #     else
+      #       # Collect binaries from the install prefix
+      #       cp install_dir/bin/* $PACKAGE_NAME/ || true
+      #       cp install_dir/lib/*.so* $PACKAGE_NAME/ 2>/dev/null || true
+      #       cp install_dir/lib/*.dylib* $PACKAGE_NAME/ 2>/dev/null || true
+      #       tar -czf "${PACKAGE_NAME}.tar.gz" $PACKAGE_NAME/
+      #       echo "ASSET_PATH=${PACKAGE_NAME}.tar.gz" >> $GITHUB_ENV
+      #     fi
+
+      # # --- Upload to Release ---
+      # - name: Upload to Release
+      #   uses: softprops/action-gh-release@v2
+      #   if: startsWith(github.ref, 'refs/tags/')
+      #   with:
+      #     files: ${{ env.ASSET_PATH }}
+      #     generate_release_notes: true
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # # --- Handle Manual Workflow Dispatch (Artifacts only) ---
+      # - name: Upload Artifacts (Manual Run)
+      #   if: (!startsWith(github.ref, 'refs/tags/'))
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: tsk-${{ matrix.os }}-${{ matrix.arch }}
+      #     path: ${{ env.ASSET_PATH }}
