@@ -85,6 +85,28 @@ jobs:
           choco install nuget.commandline
           choco install ant --ignore-dependencies
 
+      - name: Set up JDK 17
+        if: matrix.os == 'windows'
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu' # choose 'temurin', 'zulu' or 'adopt'
+          java-version: '17'
+
+      - name: Set JDK_HOME and INCLUDE
+        if: matrix.os == 'windows'
+        shell: bash
+        run: |
+          echo "JDK_HOME=$JAVA_HOME" >> $GITHUB_ENV
+          echo "INCLUDE=$INCLUDE;$JAVA_HOME/include;$JAVA_HOME/include/win32" >> $GITHUB_ENV
+
+      - name: Demo JAVA_HOME/include/jni.h
+        if: matrix.os == 'windows'
+        shell: bash
+        run: |
+          ls -l $JAVA_HOME/include/jni.h
+          echo INCLUDE=$INCLUDE
+          ls -l $GITHUB_ENV
+
       # --- Build POSIX (Linux/macOS) ---
       - name: Build POSIX
         if: matrix.os != 'windows'
@@ -112,6 +134,18 @@ jobs:
           mkdir install_dir
           copy win32/Release/*.exe install_dir/
           copy win32/Release/*.dll install_dir/
+
+      - name: Build Java
+        working-directory: "${{ github.workspace }}/tsk"
+        if: matrix.os == 'windows'
+        run: |
+          ant -version
+          cd bindings\java
+          ant -q dist
+          cd ..\..
+          cd case-uco\java
+          ant -q
+          cd ..\..
 
       - name: tree
         working-directory: "${{ github.workspace }}/tsk"
