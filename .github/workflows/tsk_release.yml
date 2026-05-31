@@ -136,7 +136,7 @@ jobs:
           python win32/updateAndBuildAll.py -m
           
           mkdir install_dir
-          copy win32/Release/* install_dir/
+          copy win32/* install_dir/
 
       # - name: Build Java
       #   working-directory: "${{ github.workspace }}/tsk"
