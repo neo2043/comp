@@ -49,11 +49,29 @@ jobs:
 
     steps:
       - name: Checkout Code
+        if: matrix.os != 'windows'
         uses: actions/checkout@v4
         with:
           repository: sleuthkit/sleuthkit
           ref: ${{ inputs.ref }}
           submodules: recursive
+
+      - name: Checkout Code
+        if: matrix.os == 'windows'
+        uses: actions/checkout@v6
+
+      - name: Checkout Code
+        if: matrix.os == 'windows'
+        uses: actions/checkout@v6
+        with:
+          path: "${{ github.workspace }}/tsk"
+          repository: sleuthkit/sleuthkit
+          ref: ${{ inputs.ref }}
+          submodules: recursive
+      
+      - name: Apply MSBuild fix patch
+        working-directory: "${{ github.workspace }}/tsk"           # Sets the base directory for this step
+        run: git apply fix-msbuild.patch
 
       # --- Dependency Installation ---
       - name: Install Linux Dependencies

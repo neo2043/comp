@@ -1,0 +1,14 @@
+diff --git a/win32/updateAndBuildAll.py b/win32/updateAndBuildAll.py
+index db1da367c..02730e9a4 100644
+--- a/win32/updateAndBuildAll.py
++++ b/win32/updateAndBuildAll.py
+@@ -21,6 +21,9 @@
+ 
+ MSBUILD_LOCATIONS = [r'C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/MSBuild/Current/Bin',
+                      r'C:/Program Files (x86)/Microsoft Visual Studio/2022/Enterprise/MSBuild/Current/Bin',
++                     r'C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin',
++                     r'C:/Program Files/Microsoft Visual Studio/2022/Enterprise/MSBuild/Current/Bin',
++                     r'/cygdrive/c/Program Files/MSBuild/14.0/Bin/',
+                      r'/cygdrive/c/Program Files (x86)/MSBuild/14.0/Bin/']
+ 
+ MSBUILD = 'MSBuild.exe'
