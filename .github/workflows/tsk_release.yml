@@ -21,6 +21,8 @@ jobs:
   build:
     name: ${{ matrix.os }}-${{ matrix.arch }}
     runs-on: ${{ matrix.runner }}
+    outputs:
+      commit: ${{ steps.checkout_tsk.commit }}
     strategy:
       fail-fast: false
       matrix:
@@ -57,6 +59,7 @@ jobs:
 
       - name: Checkout Code
         uses: actions/checkout@v6
+        id: checkout_tsk
         with:
           path: "${{ github.workspace }}/tsk"
           repository: sleuthkit/sleuthkit
@@ -232,7 +235,7 @@ jobs:
       - name: Prep Release Notes
         working-directory: release
         run: |
-          echo 'source: ${{ inputs.repo }}@${{ needs.build.outputs.commit }}' | tee ../notes.md
+          echo 'source: sleuthkit/sleuthkit@${{ needs.build.outputs.commit }}' | tee ../notes.md
           echo -e '\n```sh\necho $hash $filename | sha1sum -c\n' | tee -a ../notes.md
           sha1sum $(ls) | tee -a ../notes.md
           echo '```' | tee -a ../notes.md
