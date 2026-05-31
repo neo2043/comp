@@ -133,12 +133,12 @@ jobs:
           # Use TSK's provided build script
           # Note: We pass the architecture to MSBuild via the python wrapper if supported, 
           # otherwise, we trigger MSBuild directly.
-          python win32/updateAndBuildAll.py -m
+          python win32/updateAndBuildAll.py
           
           mkdir install_dir/x32
-          cp -r win32/Release install_dir/x32/
-          cp -r win32/Release_NoLibs install_dir/x32/
-          cp -r win32/x64 install_dir/
+          cp -ErrorAction Ignore -r win32/Release install_dir/x32/ 
+          cp -ErrorAction Ignore -r win32/Release_NoLibs install_dir/x32/
+          cp -ErrorAction Ignore -r win32/x64 install_dir/
 
       # - name: Build Java
       #   working-directory: "${{ github.workspace }}/tsk"
