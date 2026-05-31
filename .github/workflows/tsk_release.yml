@@ -48,20 +48,20 @@ jobs:
             vs_arch: ARM64
 
     steps:
-      - name: Checkout Code
-        if: matrix.os != 'windows'
-        uses: actions/checkout@v4
-        with:
-          repository: sleuthkit/sleuthkit
-          ref: ${{ inputs.ref }}
-          submodules: recursive
+      # - name: Checkout Code
+      #   if: matrix.os != 'windows'
+      #   uses: actions/checkout@v4
+      #   with:
+      #     repository: sleuthkit/sleuthkit
+      #     ref: ${{ inputs.ref }}
+      #     submodules: recursive
 
       - name: Checkout Code
-        if: matrix.os == 'windows'
+        # if: matrix.os == 'windows'
         uses: actions/checkout@v6
 
       - name: Checkout Code
-        if: matrix.os == 'windows'
+        # if: matrix.os == 'windows'
         uses: actions/checkout@v6
         with:
           path: "${{ github.workspace }}/tsk"
@@ -69,10 +69,10 @@ jobs:
           ref: ${{ inputs.ref }}
           submodules: recursive
       
-      # - name: Apply MSBuild fix patch
-      #   if: matrix.os == 'windows'
-      #   working-directory: "${{ github.workspace }}/tsk"           # Sets the base directory for this step
-      #   run: git apply fix-msbuild.patch
+      - name: Apply MSBuild fix patch
+        # if: matrix.os == 'windows'
+        working-directory: "${{ github.workspace }}/tsk"           # Sets the base directory for this step
+        run: git apply ../fix-msbuild.patch
 
       # --- Dependency Installation ---
       - name: Install Linux Dependencies
@@ -86,39 +86,39 @@ jobs:
         run: |
           brew install automake autoconf libtool libewf libmagic sqlite tree
 
-      # - name: Install Chocolatey
-      #   if: matrix.os == 'windows'
-      #   run: |
-      #     Set-ExecutionPolicy Bypass -Scope Process -Force;
-      #     [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072;
-      #     iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-      #     choco install nuget.commandline
-      #     choco install ant --ignore-dependencies
+      - name: Install Chocolatey
+        if: matrix.os == 'windows'
+        run: |
+          Set-ExecutionPolicy Bypass -Scope Process -Force;
+          [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072;
+          iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+          choco install nuget.commandline
+          choco install ant --ignore-dependencies
 
-      # # --- Build POSIX (Linux/macOS) ---
-      # - name: Build POSIX
-      #   if: matrix.os != 'windows'
-      #   run: |
-      #     ./bootstrap
-      #     ./configure --disable-java --prefix=$(pwd)/install_dir
-      #     make -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)
-      #     make install
+      # --- Build POSIX (Linux/macOS) ---
+      - name: Build POSIX
+        if: matrix.os != 'windows'
+        run: |
+          ./bootstrap
+          ./configure --disable-java --prefix=$(pwd)/install_dir
+          make -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)
+          make install
 
-      # # --- Build Windows ---
-      # - name: Build Windows
-      #   if: matrix.os == 'windows'
-      #   shell: pwsh
-      #   env:
-      #     TSK_HOME: "${{ github.workspace }}"
-      #   run: |
-      #     # Use TSK's provided build script
-      #     # Note: We pass the architecture to MSBuild via the python wrapper if supported, 
-      #     # otherwise, we trigger MSBuild directly.
-      #     python win32/updateAndBuildAll.py -m
+      # --- Build Windows ---
+      - name: Build Windows
+        if: matrix.os == 'windows'
+        shell: pwsh
+        env:
+          TSK_HOME: "${{ github.workspace }}"
+        run: |
+          # Use TSK's provided build script
+          # Note: We pass the architecture to MSBuild via the python wrapper if supported, 
+          # otherwise, we trigger MSBuild directly.
+          python win32/updateAndBuildAll.py -m
           
-      #     mkdir install_dir
-      #     copy win32/Release/*.exe install_dir/
-      #     copy win32/Release/*.dll install_dir/
+          mkdir install_dir
+          copy win32/Release/*.exe install_dir/
+          copy win32/Release/*.dll install_dir/
 
       - name: tree
         if: matrix.os == 'windows'
