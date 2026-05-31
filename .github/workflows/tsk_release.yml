@@ -60,12 +60,9 @@ jobs:
           submodules: recursive
 
       - name: Apply MSBuild fix patch
-        # if: matrix.os == 'windows'
         working-directory: "${{ github.workspace }}/tsk"           # Sets the base directory for this step
         run: |
-          pwd
-          tree
-          # git apply ../fix_msbuild.patch
+          git apply ../fix_msbuild.patch
 
       # --- Dependency Installation ---
       - name: Install Linux Dependencies
