@@ -102,7 +102,7 @@ jobs:
         working-directory: "${{ github.workspace }}/tsk"
         shell: pwsh
         env:
-          TSK_HOME: "${{ github.workspace }}"
+          TSK_HOME: "${{ github.workspace }}/tsk"
         run: |
           # Use TSK's provided build script
           # Note: We pass the architecture to MSBuild via the python wrapper if supported, 
@@ -114,6 +114,7 @@ jobs:
           copy win32/Release/*.dll install_dir/
 
       - name: tree
+        working-directory: "${{ github.workspace }}/tsk"
         if: matrix.os == 'windows'
         run: |
           cd win32/Release
@@ -121,6 +122,7 @@ jobs:
           tree /F
 
       - name: tree
+        working-directory: "${{ github.workspace }}/tsk"
         if: matrix.os == 'linux'
         run: |
           cd install_dir
@@ -128,6 +130,7 @@ jobs:
           tree
 
       - name: tree
+        working-directory: "${{ github.workspace }}/tsk"
         if: matrix.os == 'macos'
         run: |
           cd install_dir
