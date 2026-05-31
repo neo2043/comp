@@ -89,6 +89,8 @@ jobs:
       - name: Build Windows
         if: matrix.os == 'windows'
         shell: pwsh
+        env:
+          TSK_HOME: "${{ github.workspace }}"
         run: |
           # Use TSK's provided build script
           # Note: We pass the architecture to MSBuild via the python wrapper if supported, 
@@ -107,6 +109,12 @@ jobs:
 
       - name: tree
         if: matrix.os == 'linux'
+        run: |
+          cd install_dir
+          tree
+
+      - name: tree
+        if: matrix.os == 'macos'
         run: |
           cd install_dir
           tree
