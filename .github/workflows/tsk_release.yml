@@ -69,10 +69,13 @@ jobs:
           ref: ${{ inputs.ref }}
           submodules: recursive
       
-      - name: Apply MSBuild fix patch
-        # if: matrix.os == 'windows'
-        working-directory: "${{ github.workspace }}/tsk"           # Sets the base directory for this step
-        run: git apply ../fix-msbuild.patch
+      # - name: Apply MSBuild fix patch
+      #   # if: matrix.os == 'windows'
+      #   working-directory: "${{ github.workspace }}/tsk"           # Sets the base directory for this step
+      #   run: |
+      #     pwd
+      #     tree /F
+      #     git apply ../fix-msbuild.patch
 
       # --- Dependency Installation ---
       - name: Install Linux Dependencies
@@ -95,51 +98,51 @@ jobs:
           choco install nuget.commandline
           choco install ant --ignore-dependencies
 
-      # --- Build POSIX (Linux/macOS) ---
-      - name: Build POSIX
-        if: matrix.os != 'windows'
-        run: |
-          ./bootstrap
-          ./configure --disable-java --prefix=$(pwd)/install_dir
-          make -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)
-          make install
+      # # --- Build POSIX (Linux/macOS) ---
+      # - name: Build POSIX
+      #   if: matrix.os != 'windows'
+      #   run: |
+      #     ./bootstrap
+      #     ./configure --disable-java --prefix=$(pwd)/install_dir
+      #     make -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)
+      #     make install
 
-      # --- Build Windows ---
-      - name: Build Windows
-        if: matrix.os == 'windows'
-        shell: pwsh
-        env:
-          TSK_HOME: "${{ github.workspace }}"
-        run: |
-          # Use TSK's provided build script
-          # Note: We pass the architecture to MSBuild via the python wrapper if supported, 
-          # otherwise, we trigger MSBuild directly.
-          python win32/updateAndBuildAll.py -m
+      # # --- Build Windows ---
+      # - name: Build Windows
+      #   if: matrix.os == 'windows'
+      #   shell: pwsh
+      #   env:
+      #     TSK_HOME: "${{ github.workspace }}"
+      #   run: |
+      #     # Use TSK's provided build script
+      #     # Note: We pass the architecture to MSBuild via the python wrapper if supported, 
+      #     # otherwise, we trigger MSBuild directly.
+      #     python win32/updateAndBuildAll.py -m
           
-          mkdir install_dir
-          copy win32/Release/*.exe install_dir/
-          copy win32/Release/*.dll install_dir/
+      #     mkdir install_dir
+      #     copy win32/Release/*.exe install_dir/
+      #     copy win32/Release/*.dll install_dir/
 
       - name: tree
         if: matrix.os == 'windows'
         run: |
           cd ${{ github.workspace }}
           pwd
-          tree
+          tree /F
 
       - name: tree
         if: matrix.os == 'linux'
         run: |
           cd ${{ github.workspace }}
           pwd
-          tree
+          tree /F
 
       - name: tree
         if: matrix.os == 'macos'
         run: |
           cd ${{ github.workspace }}
           pwd
-          tree
+          tree /F
 
       # # --- Packaging ---
       # - name: Package Binaries
