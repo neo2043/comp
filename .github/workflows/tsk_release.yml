@@ -128,14 +128,14 @@ jobs:
         run: |
           cd ${{ github.workspace }}
           pwd
-          tree /F
+          tree
 
       - name: tree
         if: matrix.os == 'linux'
         run: |
           cd ${{ github.workspace }}
           pwd
-          tree /F
+          tree
 
       - name: tree
         if: matrix.os == 'macos'
