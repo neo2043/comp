@@ -8,6 +8,7 @@ on:
           type: string
           required: true
           default: "sleuthkit-4.15.0"
+  push:
 
 permissions:
   contents: write
@@ -50,7 +51,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
-          repository: git@github.com:sleuthkit/sleuthkit.git
+          repository: sleuthkit/sleuthkit
           ref: ${{ inputs.ref }}
           submodules: recursive
 
