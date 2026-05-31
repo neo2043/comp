@@ -135,9 +135,8 @@ jobs:
           # otherwise, we trigger MSBuild directly.
           python win32/updateAndBuildAll.py -m
           
-          # mkdir install_dir
-          # copy win32/Release/*.exe install_dir/
-          # copy win32/Release/*.dll install_dir/
+          mkdir install_dir
+          copy win32/Release/* install_dir/
 
       # - name: Build Java
       #   working-directory: "${{ github.workspace }}/tsk"
@@ -155,7 +154,7 @@ jobs:
         working-directory: "${{ github.workspace }}/tsk"
         if: matrix.os == 'windows'
         run: |
-          cd win32/Release
+          cd install_dir
           pwd
           tree /F
 
