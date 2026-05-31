@@ -140,41 +140,29 @@ jobs:
           cp -ErrorAction Ignore -r win32/Release_NoLibs install_dir/x32/
           cp -ErrorAction Ignore -r win32/x64 install_dir/
 
-      # - name: Build Java
+      # - name: tree
       #   working-directory: "${{ github.workspace }}/tsk"
       #   if: matrix.os == 'windows'
       #   run: |
-      #     ant -version
-      #     cd bindings\java
-      #     ant -q dist
-      #     cd ..\..
-      #     cd case-uco\java
-      #     ant -q
-      #     cd ..\..
+      #     cd install_dir
+      #     pwd
+      #     tree /F
 
-      - name: tree
-        working-directory: "${{ github.workspace }}/tsk"
-        if: matrix.os == 'windows'
-        run: |
-          cd install_dir
-          pwd
-          tree /F
+      # - name: tree
+      #   working-directory: "${{ github.workspace }}/tsk"
+      #   if: matrix.os == 'linux'
+      #   run: |
+      #     cd install_dir
+      #     pwd
+      #     tree
 
-      - name: tree
-        working-directory: "${{ github.workspace }}/tsk"
-        if: matrix.os == 'linux'
-        run: |
-          cd install_dir
-          pwd
-          tree
-
-      - name: tree
-        working-directory: "${{ github.workspace }}/tsk"
-        if: matrix.os == 'macos'
-        run: |
-          cd install_dir
-          pwd
-          tree
+      # - name: tree
+      #   working-directory: "${{ github.workspace }}/tsk"
+      #   if: matrix.os == 'macos'
+      #   run: |
+      #     cd install_dir
+      #     pwd
+      #     tree
 
       # # --- Packaging ---
       # - name: Package Binaries
@@ -189,12 +177,19 @@ jobs:
       #       echo "ASSET_PATH=${PACKAGE_NAME}.zip" >> $GITHUB_ENV
       #     else
       #       # Collect binaries from the install prefix
-      #       cp install_dir/bin/* $PACKAGE_NAME/ || true
-      #       cp install_dir/lib/*.so* $PACKAGE_NAME/ 2>/dev/null || true
-      #       cp install_dir/lib/*.dylib* $PACKAGE_NAME/ 2>/dev/null || true
+      #       cp install_dir/* $PACKAGE_NAME/ || true
       #       tar -czf "${PACKAGE_NAME}.tar.gz" $PACKAGE_NAME/
       #       echo "ASSET_PATH=${PACKAGE_NAME}.tar.gz" >> $GITHUB_ENV
       #     fi
+
+      # --- Handle Manual Workflow Dispatch (Artifacts only) ---
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: tsk-${{ matrix.os }}-${{ matrix.arch }}
+          path: "${{ github.workspace }}/tsk/install_dir"
+          overwrite: true
+          archive: true
 
       # # --- Upload to Release ---
       # - name: Upload to Release
@@ -213,3 +208,53 @@ jobs:
       #   with:
       #     name: tsk-${{ matrix.os }}-${{ matrix.arch }}
       #     path: ${{ env.ASSET_PATH }}
+
+  release:
+    if: always()
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      packages: write
+      actions: write
+      id-token: write
+      attestations: write
+    
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: tsk-*
+          path: release
+          merge-multiple: true
+          skip-decompress: true
+
+      - name: Prep Release Notes
+        working-directory: release
+        run: |
+          echo 'source: ${{ inputs.repo }}@${{ needs.build.outputs.commit }}' | tee ../notes.md
+          echo -e '\n```sh\necho $hash $filename | sha1sum -c\n' | tee -a ../notes.md
+          sha1sum $(ls) | tee -a ../notes.md
+          echo '```' | tee -a ../notes.md
+
+      - name: Generate Provenance Attestation
+        uses: actions/attest@v4
+        with:
+          subject-path: "release/*"
+
+      - name: Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: tsk/${{ needs.build.outputs.commit }}
+          name: tsk@${{ inputs.ref }}
+          makeLatest: true
+          prerelease: false
+          allowUpdates: false
+          replacesArtifacts: false
+          draft: true
+          immutableCreate: true
+          updateOnlyUnreleased: true
+          skipIfReleaseExists: true
+          artifacts: "release/*"
+          bodyFile: "notes.md"
+          token: ${{ github.token }} 
