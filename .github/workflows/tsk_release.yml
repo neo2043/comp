@@ -124,18 +124,21 @@ jobs:
         if: matrix.os == 'windows'
         run: |
           cd ${{ github.workspace }}
+          pwd
           tree
 
       - name: tree
         if: matrix.os == 'linux'
         run: |
           cd ${{ github.workspace }}
+          pwd
           tree
 
       - name: tree
         if: matrix.os == 'macos'
         run: |
           cd ${{ github.workspace }}
+          pwd
           tree
 
       # # --- Packaging ---
