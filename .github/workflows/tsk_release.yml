@@ -25,21 +25,21 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # --- Linux ---
-          - os: linux
-            arch: x86_64
-            runner: ubuntu-latest
-          - os: linux
-            arch: aarch64
-            runner: ubuntu-24.04-arm # Native GitHub ARM runner
+          # # --- Linux ---
+          # - os: linux
+          #   arch: x86_64
+          #   runner: ubuntu-latest
+          # - os: linux
+          #   arch: aarch64
+          #   runner: ubuntu-24.04-arm # Native GitHub ARM runner
 
-          # --- macOS ---
-          - os: macos
-            arch: x86_64
-            runner: macos-26-intel
-          - os: macos
-            arch: aarch64
-            runner: macos-26 # Apple Silicon
+          # # --- macOS ---
+          # - os: macos
+          #   arch: x86_64
+          #   runner: macos-26-intel
+          # - os: macos
+          #   arch: aarch64
+          #   runner: macos-26 # Apple Silicon
 
           # --- Windows ---
           - os: windows
@@ -135,8 +135,10 @@ jobs:
           # otherwise, we trigger MSBuild directly.
           python win32/updateAndBuildAll.py -m
           
-          mkdir install_dir
-          copy win32/* install_dir/
+          mkdir install_dir/x32
+          cp -r win32/Release install_dir/x32/
+          cp -r win32/Release_NoLibs install_dir/x32/
+          cp -r win32/x64 install_dir/
 
       # - name: Build Java
       #   working-directory: "${{ github.workspace }}/tsk"
