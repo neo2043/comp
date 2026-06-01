@@ -22,7 +22,7 @@ jobs:
     name: ${{ matrix.os }}-${{ matrix.arch }}
     runs-on: ${{ matrix.runner }}
     outputs:
-      commit: ${{ steps.checkout_tsk.commit }}
+      ${{ steps.checkout_tsk.outputs.commit }}
     strategy:
       fail-fast: false
       matrix:
