@@ -106,14 +106,6 @@ jobs:
           echo "JDK_HOME=$JAVA_HOME" >> $GITHUB_ENV
           echo "INCLUDE=$INCLUDE;$JAVA_HOME/include;$JAVA_HOME/include/win32" >> $GITHUB_ENV
 
-      - name: Demo JAVA_HOME/include/jni.h
-        if: matrix.os == 'windows'
-        shell: bash
-        run: |
-          ls -l $JAVA_HOME/include/jni.h
-          echo INCLUDE=$INCLUDE
-          ls -l $GITHUB_ENV
-
       # --- Build POSIX (Linux/macOS) ---
       - name: Build POSIX
         if: matrix.os != 'windows'
@@ -143,48 +135,6 @@ jobs:
           cp -ErrorAction Ignore -r win32/Release_NoLibs install_dir/x32/
           cp -ErrorAction Ignore -r win32/x64 install_dir/
 
-      # - name: tree
-      #   working-directory: "${{ github.workspace }}/tsk"
-      #   if: matrix.os == 'windows'
-      #   run: |
-      #     cd install_dir
-      #     pwd
-      #     tree /F
-
-      # - name: tree
-      #   working-directory: "${{ github.workspace }}/tsk"
-      #   if: matrix.os == 'linux'
-      #   run: |
-      #     cd install_dir
-      #     pwd
-      #     tree
-
-      # - name: tree
-      #   working-directory: "${{ github.workspace }}/tsk"
-      #   if: matrix.os == 'macos'
-      #   run: |
-      #     cd install_dir
-      #     pwd
-      #     tree
-
-      # # --- Packaging ---
-      # - name: Package Binaries
-      #   shell: bash
-      #   run: |
-      #     PACKAGE_NAME="sleuthkit-${{ matrix.os }}-${{ matrix.arch }}"
-      #     mkdir -p $PACKAGE_NAME
-          
-      #     if [ "${{ matrix.os }}" == "windows" ]; then
-      #       cp install_dir/* $PACKAGE_NAME/
-      #       zip -r "${PACKAGE_NAME}.zip" $PACKAGE_NAME/
-      #       echo "ASSET_PATH=${PACKAGE_NAME}.zip" >> $GITHUB_ENV
-      #     else
-      #       # Collect binaries from the install prefix
-      #       cp install_dir/* $PACKAGE_NAME/ || true
-      #       tar -czf "${PACKAGE_NAME}.tar.gz" $PACKAGE_NAME/
-      #       echo "ASSET_PATH=${PACKAGE_NAME}.tar.gz" >> $GITHUB_ENV
-      #     fi
-
       # --- Handle Manual Workflow Dispatch (Artifacts only) ---
       - name: Upload Artifacts
         uses: actions/upload-artifact@v7
@@ -193,24 +143,6 @@ jobs:
           path: "${{ github.workspace }}/tsk/install_dir"
           overwrite: true
           archive: true
-
-      # # --- Upload to Release ---
-      # - name: Upload to Release
-      #   uses: softprops/action-gh-release@v2
-      #   if: startsWith(github.ref, 'refs/tags/')
-      #   with:
-      #     files: ${{ env.ASSET_PATH }}
-      #     generate_release_notes: true
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # # --- Handle Manual Workflow Dispatch (Artifacts only) ---
-      # - name: Upload Artifacts (Manual Run)
-      #   if: (!startsWith(github.ref, 'refs/tags/'))
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: tsk-${{ matrix.os }}-${{ matrix.arch }}
-      #     path: ${{ env.ASSET_PATH }}
 
   release:
     if: always() && !cancelled()
