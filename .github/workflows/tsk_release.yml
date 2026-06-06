@@ -69,7 +69,7 @@ jobs:
       - name: Apply MSBuild fix patch
         working-directory: "${{ github.workspace }}/tsk"           # Sets the base directory for this step
         run: |
-          git apply ../fix_msbuild.patch
+          git apply ../tsk/patch/fix_msbuild.patch
 
       # --- Dependency Installation ---
       - name: Install Linux Dependencies
