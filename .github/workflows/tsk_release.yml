@@ -116,6 +116,7 @@ jobs:
           ./configure --disable-java --prefix=$(pwd)/install_dir
           make -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)
           make install
+          tree
 
       # --- Build Windows ---
       - name: Build Windows
@@ -129,67 +130,69 @@ jobs:
           # Note: We pass the architecture to MSBuild via the python wrapper if supported, 
           # otherwise, we trigger MSBuild directly.
           python win32/updateAndBuildAll.py
+          # python ../tsk_helper/include_files_exposer.py
+          tree /F
           
-          mkdir install_dir/x32
-          cp -ErrorAction Ignore -r win32/Release install_dir/x32/ 
-          cp -ErrorAction Ignore -r win32/Release_NoLibs install_dir/x32/
-          cp -ErrorAction Ignore -r win32/x64 install_dir/
+          # mkdir install_dir/x32
+          # cp -ErrorAction Ignore -r win32/Release install_dir/x32/ 
+          # cp -ErrorAction Ignore -r win32/Release_NoLibs install_dir/x32/
+          # cp -ErrorAction Ignore -r win32/x64 install_dir/
 
       # --- Handle Manual Workflow Dispatch (Artifacts only) ---
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v7
-        with:
-          name: tsk-${{ matrix.os }}-${{ matrix.arch }}
-          path: "${{ github.workspace }}/tsk/install_dir"
-          overwrite: true
-          archive: true
+  #     - name: Upload Artifacts
+  #       uses: actions/upload-artifact@v7
+  #       with:
+  #         name: tsk-${{ matrix.os }}-${{ matrix.arch }}
+  #         path: "${{ github.workspace }}/tsk/install_dir"
+  #         overwrite: true
+  #         archive: true
 
-  release:
-    if: always() && !cancelled()
-    needs: build
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      contents: write
-      packages: write
-      actions: write
-      id-token: write
-      attestations: write
+  # release:
+  #   if: always() && !cancelled()
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 10
+  #   permissions:
+  #     contents: write
+  #     packages: write
+  #     actions: write
+  #     id-token: write
+  #     attestations: write
     
-    steps:
-      - uses: actions/download-artifact@v8
-        with:
-          pattern: tsk-*
-          path: release
-          merge-multiple: true
-          skip-decompress: true
+  #   steps:
+  #     - uses: actions/download-artifact@v8
+  #       with:
+  #         pattern: tsk-*
+  #         path: release
+  #         merge-multiple: true
+  #         skip-decompress: true
 
-      - name: Prep Release Notes
-        working-directory: release
-        run: |
-          echo 'source: sleuthkit/sleuthkit@${{ needs.build.outputs.commit }}' | tee ../notes.md
-          echo -e '\n```sh\necho $hash $filename | sha1sum -c\n' | tee -a ../notes.md
-          sha1sum $(ls) | tee -a ../notes.md
-          echo '```' | tee -a ../notes.md
+  #     - name: Prep Release Notes
+  #       working-directory: release
+  #       run: |
+  #         echo 'source: sleuthkit/sleuthkit@${{ needs.build.outputs.commit }}' | tee ../notes.md
+  #         echo -e '\n```sh\necho $hash $filename | sha1sum -c\n' | tee -a ../notes.md
+  #         sha1sum $(ls) | tee -a ../notes.md
+  #         echo '```' | tee -a ../notes.md
 
-      - name: Generate Provenance Attestation
-        uses: actions/attest@v4
-        with:
-          subject-path: "release/*"
+  #     - name: Generate Provenance Attestation
+  #       uses: actions/attest@v4
+  #       with:
+  #         subject-path: "release/*"
 
-      - name: Release
-        uses: ncipollo/release-action@v1
-        with:
-          tag: tsk/${{ needs.build.outputs.commit }}
-          name: tsk@${{ inputs.ref }}
-          makeLatest: true
-          prerelease: false
-          allowUpdates: false
-          replacesArtifacts: false
-          draft: true
-          immutableCreate: true
-          updateOnlyUnreleased: true
-          skipIfReleaseExists: true
-          artifacts: "release/*"
-          bodyFile: "notes.md"
-          token: ${{ github.token }} 
+  #     - name: Release
+  #       uses: ncipollo/release-action@v1
+  #       with:
+  #         tag: tsk/${{ needs.build.outputs.commit }}
+  #         name: tsk@${{ inputs.ref }}
+  #         makeLatest: true
+  #         prerelease: false
+  #         allowUpdates: false
+  #         replacesArtifacts: false
+  #         draft: true
+  #         immutableCreate: true
+  #         updateOnlyUnreleased: true
+  #         skipIfReleaseExists: true
+  #         artifacts: "release/*"
+  #         bodyFile: "notes.md"
+  #         token: ${{ github.token }} 
