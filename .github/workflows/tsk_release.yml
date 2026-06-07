@@ -8,11 +8,11 @@ on:
           type: string
           required: true
           default: "sleuthkit-4.15.0"
-      skipIfReleaseExists:
-        description: "Skip release if it already exists"
-        type: boolean
-        required: true
-        default: false
+        skipIfReleaseExists:
+          description: "Skip release if it already exists"
+          type: boolean
+          required: true
+          default: false
   push:
 
 permissions:
