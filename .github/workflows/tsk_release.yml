@@ -32,31 +32,31 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # # --- Linux ---
-          # - os: linux
-          #   arch: x86_64
-          #   runner: ubuntu-latest
-          # - os: linux
-          #   arch: aarch64
-          #   runner: ubuntu-24.04-arm # Native GitHub ARM runner
+          # --- Linux ---
+          - os: linux
+            arch: x86_64
+            runner: ubuntu-latest
+          - os: linux
+            arch: aarch64
+            runner: ubuntu-24.04-arm # Native GitHub ARM runner
 
-          # # --- macOS ---
-          # - os: macos
-          #   arch: x86_64
-          #   runner: macos-26-intel
-          # - os: macos
-          #   arch: aarch64
-          #   runner: macos-26 # Apple Silicon
+          # --- macOS ---
+          - os: macos
+            arch: x86_64
+            runner: macos-26-intel
+          - os: macos
+            arch: aarch64
+            runner: macos-26 # Apple Silicon
 
           # --- Windows ---
           - os: windows
             arch: x86_64
-            runner: windows-2025
+            runner: windows-latest
             vs_arch: x64
-          # - os: windows
-          #   arch: aarch64
-          #   runner: windows-11-arm
-          #   vs_arch: ARM64
+          - os: windows
+            arch: aarch64
+            runner: windows-11-arm
+            vs_arch: ARM64
 
     steps:
       - name: Checkout Code
@@ -102,106 +102,106 @@ jobs:
           cat tsk_helper/patch/fix_msbuild.patch
           cat tsk/win32/updateAndBuildAll.py
 
-  #     - name: Set up JDK 17
-  #       if: matrix.os == 'windows'
-  #       uses: actions/setup-java@v4
-  #       with:
-  #         distribution: 'zulu' # choose 'temurin', 'zulu' or 'adopt'
-  #         java-version: '17'
+      - name: Set up JDK 17
+        if: matrix.os == 'windows'
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu' # choose 'temurin', 'zulu' or 'adopt'
+          java-version: '17'
 
-  #     - name: Set JDK_HOME and INCLUDE
-  #       if: matrix.os == 'windows'
-  #       shell: bash
-  #       run: |
-  #         echo "JDK_HOME=$JAVA_HOME" >> $GITHUB_ENV
-  #         echo "INCLUDE=$INCLUDE;$JAVA_HOME/include;$JAVA_HOME/include/win32" >> $GITHUB_ENV
+      - name: Set JDK_HOME and INCLUDE
+        if: matrix.os == 'windows'
+        shell: bash
+        run: |
+          echo "JDK_HOME=$JAVA_HOME" >> $GITHUB_ENV
+          echo "INCLUDE=$INCLUDE;$JAVA_HOME/include;$JAVA_HOME/include/win32" >> $GITHUB_ENV
 
-  #     # --- Build POSIX (Linux/macOS) ---
-  #     - name: Build POSIX
-  #       if: matrix.os != 'windows'
-  #       working-directory: "${{ github.workspace }}/tsk"
-  #       run: |
-  #         mkdir install_dir
-  #         ./bootstrap
-  #         ./configure --disable-java --prefix=$(pwd)/install_dir
-  #         make -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)
-  #         make install
-  #         tree
+      # --- Build POSIX (Linux/macOS) ---
+      - name: Build POSIX
+        if: matrix.os != 'windows'
+        working-directory: "${{ github.workspace }}/tsk"
+        run: |
+          mkdir install_dir
+          ./bootstrap
+          ./configure --disable-java --prefix=$(pwd)/install_dir
+          make -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)
+          make install
+          tree
 
-  #     # --- Build Windows ---
-  #     - name: Build Windows
-  #       if: matrix.os == 'windows'
-  #       working-directory: "${{ github.workspace }}/tsk"
-  #       shell: pwsh
-  #       env:
-  #         TSK_HOME: "${{ github.workspace }}/tsk"
-  #       run: |
-  #         # Use TSK's provided build script
-  #         # Note: We pass the architecture to MSBuild via the python wrapper if supported, 
-  #         # otherwise, we trigger MSBuild directly.
-  #         python win32/updateAndBuildAll.py
+      # --- Build Windows ---
+      - name: Build Windows
+        if: matrix.os == 'windows'
+        working-directory: "${{ github.workspace }}/tsk"
+        shell: pwsh
+        env:
+          TSK_HOME: "${{ github.workspace }}/tsk"
+        run: |
+          # Use TSK's provided build script
+          # Note: We pass the architecture to MSBuild via the python wrapper if supported, 
+          # otherwise, we trigger MSBuild directly.
+          python win32/updateAndBuildAll.py
           
-  #         mkdir install_dir/x32
-  #         cp -ErrorAction Ignore -r win32/Release install_dir/x32/ 
-  #         cp -ErrorAction Ignore -r win32/Release_NoLibs install_dir/x32/
-  #         cp -ErrorAction Ignore -r win32/x64 install_dir/
-  #         python ../tsk_helper/include_files_exposer.py --source . --dest ./install_dir
+          mkdir install_dir/x32
+          cp -ErrorAction Ignore -r win32/Release install_dir/x32/ 
+          cp -ErrorAction Ignore -r win32/Release_NoLibs install_dir/x32/
+          cp -ErrorAction Ignore -r win32/x64 install_dir/
+          python ../tsk_helper/include_files_exposer.py --source . --dest ./install_dir
 
-  #     # --- Handle Manual Workflow Dispatch (Artifacts only) ---
-  #     - name: Upload Artifacts
-  #       uses: actions/upload-artifact@v7
-  #       with:
-  #         name: tsk-${{ matrix.os }}-${{ matrix.arch }}
-  #         path: "${{ github.workspace }}/tsk/install_dir"
-  #         overwrite: true
-  #         archive: true
+      # --- Handle Manual Workflow Dispatch (Artifacts only) ---
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: tsk-${{ matrix.os }}-${{ matrix.arch }}
+          path: "${{ github.workspace }}/tsk/install_dir"
+          overwrite: true
+          archive: true
 
-  # release:
-  #   if: always() && !cancelled()
-  #   needs: build
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 10
-  #   permissions:
-  #     contents: write
-  #     packages: write
-  #     actions: write
-  #     id-token: write
-  #     attestations: write
+  release:
+    if: always() && !cancelled()
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      packages: write
+      actions: write
+      id-token: write
+      attestations: write
     
-  #   steps:
-  #     - uses: actions/download-artifact@v8
-  #       with:
-  #         pattern: tsk-*
-  #         path: release
-  #         merge-multiple: true
-  #         skip-decompress: true
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: tsk-*
+          path: release
+          merge-multiple: true
+          skip-decompress: true
 
-  #     - name: Prep Release Notes
-  #       working-directory: release
-  #       run: |
-  #         echo 'source: sleuthkit/sleuthkit@${{ needs.build.outputs.commit }}' | tee ../notes.md
-  #         echo -e '\n```sh\necho $hash $filename | sha1sum -c\n' | tee -a ../notes.md
-  #         sha1sum $(ls) | tee -a ../notes.md
-  #         echo '```' | tee -a ../notes.md
+      - name: Prep Release Notes
+        working-directory: release
+        run: |
+          echo 'source: sleuthkit/sleuthkit@${{ needs.build.outputs.commit }}' | tee ../notes.md
+          echo -e '\n```sh\necho $hash $filename | sha1sum -c\n' | tee -a ../notes.md
+          sha1sum $(ls) | tee -a ../notes.md
+          echo '```' | tee -a ../notes.md
 
-  #     - name: Generate Provenance Attestation
-  #       uses: actions/attest@v4
-  #       with:
-  #         subject-path: "release/*"
+      - name: Generate Provenance Attestation
+        uses: actions/attest@v4
+        with:
+          subject-path: "release/*"
 
-  #     - name: Release
-  #       uses: ncipollo/release-action@v1
-  #       with:
-  #         tag: tsk/${{ needs.build.outputs.commit }}
-  #         name: tsk@${{ inputs.ref }}
-  #         makeLatest: true
-  #         prerelease: false
-  #         allowUpdates: false
-  #         replacesArtifacts: false
-  #         draft: true
-  #         immutableCreate: true
-  #         updateOnlyUnreleased: true
-  #         skipIfReleaseExists: ${{ inputs.skipIfReleaseExists }}
-  #         artifacts: "release/*"
-  #         bodyFile: "notes.md"
-  #         token: ${{ github.token }} 
+      - name: Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: tsk/${{ needs.build.outputs.commit }}
+          name: tsk@${{ inputs.ref }}
+          makeLatest: true
+          prerelease: false
+          allowUpdates: false
+          replacesArtifacts: false
+          draft: true
+          immutableCreate: true
+          updateOnlyUnreleased: true
+          skipIfReleaseExists: ${{ inputs.skipIfReleaseExists }}
+          artifacts: "release/*"
+          bodyFile: "notes.md"
+          token: ${{ github.token }} 
