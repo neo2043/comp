@@ -24,7 +24,7 @@ concurrency:
 
 jobs:
   build:
-    name: ${{ matrix.os }}-${{ matrix.arch }}
+    name: ${{ matrix.arch }}-${{ matrix.os }}
     runs-on: ${{ matrix.runner }}
     outputs:
       commit: ${{ steps.checkout_tsk.outputs.commit }}
@@ -96,11 +96,6 @@ jobs:
           iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
           choco install nuget.commandline
           choco install ant --ignore-dependencies
-      
-      - name: cat msbuild python
-        run: |
-          cat tsk_helper/patch/fix_msbuild.patch
-          cat tsk/win32/updateAndBuildAll.py
 
       - name: Set up JDK 17
         if: matrix.os == 'windows'
@@ -151,7 +146,7 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: tsk-${{ matrix.os }}-${{ matrix.arch }}
+          name: tsk-${{ matrix.arch }}-${{ matrix.os }}
           path: "${{ github.workspace }}/tsk/install_dir"
           overwrite: true
           archive: true
