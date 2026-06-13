@@ -1,5 +1,5 @@
 diff --git a/win32/libtsk/libtsk.vcxproj b/win32/libtsk/libtsk.vcxproj
-index f32e50757..34ce8b043 100755
+index f32e50757..f35ae25e3 100755
 --- a/win32/libtsk/libtsk.vcxproj
 +++ b/win32/libtsk/libtsk.vcxproj
 @@ -62,37 +62,37 @@
@@ -136,13 +136,6 @@ index f32e50757..34ce8b043 100755
    </ItemDefinitionGroup>
    <ItemGroup>
      <ClCompile Include="..\..\tsk\auto\guid.cpp" />
-@@ -609,4 +637,4 @@ xcopy /E /Y "$(VCInstallDir)\redist\MSVC\$(VCToolsRedistVersion)\$(PlatformTarge
-     <Error Condition="!Exists('..\packages\openssl-vc142.1.1.0\build\native\openssl-vc142.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\openssl-vc142.1.1.0\build\native\openssl-vc142.targets'))" />
-     <Error Condition="!Exists('..\packages\mbedtls-v143-static.3.5.0\build\native\mbedtls-v143-static.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\mbedtls-v143-static.3.5.0\build\native\mbedtls-v143-static.targets'))" />
-   </Target>
--</Project>
-\ No newline at end of file
-+</Project>
 diff --git a/win32/updateAndBuildAll.py b/win32/updateAndBuildAll.py
 index db1da367c..26920e569 100644
 --- a/win32/updateAndBuildAll.py
