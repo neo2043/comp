@@ -1,3 +1,148 @@
+diff --git a/win32/libtsk/libtsk.vcxproj b/win32/libtsk/libtsk.vcxproj
+index f32e50757..34ce8b043 100755
+--- a/win32/libtsk/libtsk.vcxproj
++++ b/win32/libtsk/libtsk.vcxproj
+@@ -62,37 +62,37 @@
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+     <ConfigurationType>StaticLibrary</ConfigurationType>
+     <CharacterSet>Unicode</CharacterSet>
+-    <WholeProgramOptimization>true</WholeProgramOptimization>
++    <WholeProgramOptimization>false</WholeProgramOptimization>
+     <PlatformToolset>v142</PlatformToolset>
+   </PropertyGroup>
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_NoLibs|Win32'" Label="Configuration">
+     <ConfigurationType>StaticLibrary</ConfigurationType>
+     <CharacterSet>Unicode</CharacterSet>
+-    <WholeProgramOptimization>true</WholeProgramOptimization>
++    <WholeProgramOptimization>false</WholeProgramOptimization>
+     <PlatformToolset>v142</PlatformToolset>
+   </PropertyGroup>
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_XPNoLibs|Win32'" Label="Configuration">
+     <ConfigurationType>StaticLibrary</ConfigurationType>
+     <CharacterSet>Unicode</CharacterSet>
+-    <WholeProgramOptimization>true</WholeProgramOptimization>
++    <WholeProgramOptimization>false</WholeProgramOptimization>
+     <PlatformToolset>v141_xp</PlatformToolset>
+   </PropertyGroup>
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+     <ConfigurationType>StaticLibrary</ConfigurationType>
+     <CharacterSet>Unicode</CharacterSet>
+-    <WholeProgramOptimization>true</WholeProgramOptimization>
++    <WholeProgramOptimization>false</WholeProgramOptimization>
+     <PlatformToolset>v142</PlatformToolset>
+   </PropertyGroup>
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_NoLibs|x64'" Label="Configuration">
+     <ConfigurationType>StaticLibrary</ConfigurationType>
+     <CharacterSet>Unicode</CharacterSet>
+-    <WholeProgramOptimization>true</WholeProgramOptimization>
++    <WholeProgramOptimization>false</WholeProgramOptimization>
+     <PlatformToolset>v142</PlatformToolset>
+   </PropertyGroup>
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_XPNoLibs|x64'" Label="Configuration">
+     <ConfigurationType>StaticLibrary</ConfigurationType>
+     <CharacterSet>Unicode</CharacterSet>
+-    <WholeProgramOptimization>true</WholeProgramOptimization>
++    <WholeProgramOptimization>false</WholeProgramOptimization>
+     <PlatformToolset>v142</PlatformToolset>
+   </PropertyGroup>
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+@@ -177,7 +177,11 @@
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <CompileAs>Default</CompileAs>
+       <DisableSpecificWarnings>4200;4814;5030</DisableSpecificWarnings>
++      <WholeProgramOptimization>false</WholeProgramOptimization>
+     </ClCompile>
++    <Lib>
++      <LinkTimeCodeGeneration>false</LinkTimeCodeGeneration>
++    </Lib>
+     <PreBuildEvent>
+       <Command>copy "$(LibEwfLib)\libewf.dll" "$(OutDir)"
+ copy "$(ZlibDll)\zlib.dll" "$(OutDir)"
+@@ -203,7 +207,11 @@ copy "$(LibVhdiLib)\libvhdi.dll" "$(OutDir)"</Command>
+       <WarningLevel>Level3</WarningLevel>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <DisableSpecificWarnings>4200;4814;5030</DisableSpecificWarnings>
++      <WholeProgramOptimization>false</WholeProgramOptimization>
+     </ClCompile>
++    <Lib>
++      <LinkTimeCodeGeneration>false</LinkTimeCodeGeneration>
++    </Lib>
+     <PreBuildEvent>
+       <Command>copy "$(LibEwfLib)\libewf.dll" "$(OutDir)"
+ copy "$(ZlibDll)\zlib.dll" "$(OutDir)"
+@@ -303,6 +311,7 @@ xcopy /E /Y "$(VCInstallDir)\redist\MSVC\$(VCToolsRedistVersion)\$(PlatformTarge
+       <WarningLevel>Level3</WarningLevel>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <DisableSpecificWarnings>4200;4814;5030</DisableSpecificWarnings>
++      <WholeProgramOptimization>false</WholeProgramOptimization>
+     </ClCompile>
+     <PreBuildEvent>
+       <Command>copy "$(LibEwfLib)\libewf.dll" "$(OutDir)"
+@@ -318,6 +327,9 @@ xcopy /E /Y "$(VCInstallDir)\redist\MSVC\$(VCToolsRedistVersion)\$(PlatformTarge
+     <Lib>
+       <AdditionalLibraryDirectories>$(MbedTlsLib);</AdditionalLibraryDirectories>
+     </Lib>
++    <Lib>
++      <LinkTimeCodeGeneration>false</LinkTimeCodeGeneration>
++    </Lib>
+   </ItemDefinitionGroup>
+   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_NoLibs|x64'">
+     <ClCompile>
+@@ -333,7 +345,11 @@ xcopy /E /Y "$(VCInstallDir)\redist\MSVC\$(VCToolsRedistVersion)\$(PlatformTarge
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <CompileAsManaged>false</CompileAsManaged>
+       <DisableSpecificWarnings>4200;4814;5030</DisableSpecificWarnings>
++      <WholeProgramOptimization>false</WholeProgramOptimization>
+     </ClCompile>
++    <Lib>
++      <LinkTimeCodeGeneration>false</LinkTimeCodeGeneration>
++    </Lib>
+   </ItemDefinitionGroup>
+   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_XPNoLibs|x64'">
+     <ClCompile>
+@@ -349,7 +365,11 @@ xcopy /E /Y "$(VCInstallDir)\redist\MSVC\$(VCToolsRedistVersion)\$(PlatformTarge
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <CompileAsManaged>false</CompileAsManaged>
+       <DisableSpecificWarnings>4200;4814;5030</DisableSpecificWarnings>
++      <WholeProgramOptimization>false</WholeProgramOptimization>
+     </ClCompile>
++    <Lib>
++      <LinkTimeCodeGeneration>false</LinkTimeCodeGeneration>
++    </Lib>
+   </ItemDefinitionGroup>
+   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_NoLibs|Win32'">
+     <ClCompile>
+@@ -364,7 +384,11 @@ xcopy /E /Y "$(VCInstallDir)\redist\MSVC\$(VCToolsRedistVersion)\$(PlatformTarge
+       <WarningLevel>Level3</WarningLevel>
+       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+       <DisableSpecificWarnings>4200;4814;5030</DisableSpecificWarnings>
++      <WholeProgramOptimization>false</WholeProgramOptimization>
+     </ClCompile>
++    <Lib>
++      <LinkTimeCodeGeneration>false</LinkTimeCodeGeneration>
++    </Lib>
+   </ItemDefinitionGroup>
+   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_NoLibs|x64'">
+     <ClCompile>
+@@ -378,7 +402,11 @@ xcopy /E /Y "$(VCInstallDir)\redist\MSVC\$(VCToolsRedistVersion)\$(PlatformTarge
+       <WarningLevel>Level3</WarningLevel>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+       <DisableSpecificWarnings>4200;4814;5030</DisableSpecificWarnings>
++      <WholeProgramOptimization>false</WholeProgramOptimization>
+     </ClCompile>
++    <Lib>
++      <LinkTimeCodeGeneration>false</LinkTimeCodeGeneration>
++    </Lib>
+   </ItemDefinitionGroup>
+   <ItemGroup>
+     <ClCompile Include="..\..\tsk\auto\guid.cpp" />
+@@ -609,4 +637,4 @@ xcopy /E /Y "$(VCInstallDir)\redist\MSVC\$(VCToolsRedistVersion)\$(PlatformTarge
+     <Error Condition="!Exists('..\packages\openssl-vc142.1.1.0\build\native\openssl-vc142.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\openssl-vc142.1.1.0\build\native\openssl-vc142.targets'))" />
+     <Error Condition="!Exists('..\packages\mbedtls-v143-static.3.5.0\build\native\mbedtls-v143-static.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\mbedtls-v143-static.3.5.0\build\native\mbedtls-v143-static.targets'))" />
+   </Target>
+-</Project>
+\ No newline at end of file
++</Project>
 diff --git a/win32/updateAndBuildAll.py b/win32/updateAndBuildAll.py
 index db1da367c..26920e569 100644
 --- a/win32/updateAndBuildAll.py
