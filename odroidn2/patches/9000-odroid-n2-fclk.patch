@@ -1,0 +1,27 @@
+diff --git a/drivers/mmc/meson_gx_mmc.c b/drivers/mmc/meson_gx_mmc.c
+--- a/drivers/mmc/meson_gx_mmc.c
++++ b/drivers/mmc/meson_gx_mmc.c
+@@ -52,6 +52,23 @@ static void meson_mmc_config_clock(struct mmc *mmc)
+ 
+ 	/* 1GHz / CLK_MAX_DIV = 15,9 MHz */
+ 	if (mmc->clock > 16000000) {
++#if CONFIG_IS_ENABLED(DM_MMC) && !defined(CONFIG_SPL_BUILD)
++		fdt_addr_t addr = dev_read_addr(mmc->dev);
++
++		/* Selecting FCLK_DIV2 with its gate off can stall MMC MMIO. */
++		if ((addr == 0xffe05000 || addr == 0xffe07000) &&
++		    (ofnode_device_is_compatible(ofnode_root(), "hardkernel,odroid-n2") ||
++		     ofnode_device_is_compatible(ofnode_root(), "hardkernel,odroid-n2-plus"))) {
++			void __iomem *fix_pll_cntl1 = (void __iomem *)0xff63c2a4;
++
++			if (!(readl(fix_pll_cntl1) & BIT(24))) {
++				setbits_le32(fix_pll_cntl1, BIT(24));
++				readl(fix_pll_cntl1);
++				puts(addr == 0xffe05000 ? "N2 SD: enabled FCLK_DIV2\n" :
++				     "N2 eMMC: enabled FCLK_DIV2\n");
++			}
++		}
++#endif
+ 		clk = SD_EMMC_CLKSRC_DIV2;
+ 		clk_src = CLK_SRC_DIV2;
+ 	} else {

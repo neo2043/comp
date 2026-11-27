@@ -1,0 +1,117 @@
+name: ODROID N2+ Armbian Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      runner:
+        description: Ubuntu 24.04 x86-64 runner label (30 GiB free required)
+        type: string
+        default: ubuntu-26.04
+      release_version:
+        description: Release version within the odroidn2 tag namespace
+        type: string
+        default: 2026.07-fclk1
+
+env:
+  ARMBIAN_REV: '4177e637f051136da99c7d4e3359e6d56ed195f3'
+  LINUX_REV: '4700e3adf3b24b39dd4929e9c6d62811ba3ccea8'
+  UBOOT_TAG: 'v2026.07'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: odroidn2-${{ inputs.release_version }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Checkout pinned Armbian build tree
+        uses: actions/checkout@v6
+        with:
+          repository: armbian/build
+          ref: ${{ env.ARMBIAN_REV }}
+          path: armbian
+          persist-credentials: false
+
+      - name: Register U-Boot patch with Armbian
+        run: |
+          # Armbian resets its U-Boot worktree before applying board patches.
+          patch=9000-odroid-n2-fclk.patch
+          install -Dm644 "odroidn2/patches/$patch" \
+            "armbian/userpatches/u-boot/$UBOOT_TAG/board_odroidn2/$patch"
+
+      - name: Build and verify headless image
+        working-directory: armbian
+        run: bash ../odroidn2/build.sh "$RUNNER_TEMP/odroidn2-release"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: odroidn2-release
+          path: ${{ runner.temp }}/odroidn2-release/
+          if-no-files-found: error
+          overwrite: true
+          archive: true
+
+  release:
+    needs: build
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: odroidn2-release
+          path: release
+
+      - name: Prep Release Notes
+        id: notes
+        working-directory: release
+        env:
+          VERSION: ${{ inputs.release_version }}
+          BUILD_COMMIT: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          [[ "$VERSION" =~ ^[0-9][a-zA-Z0-9.-]*$ ]]
+          sha256sum -c SHA256SUMS
+          {
+            echo 'Unofficial headless Armbian: Ubuntu 26.04 Minimal, Linux 6.18.65, U-Boot 2026.07.'
+            echo 'The locally built image passed cold boot from microSD and eMMC on ODROID N2+. Hardware verification of this CI artifact is separate.'
+            printf '\nBuild recipe: https://github.com/%s/tree/%s/odroidn2\n' "$GITHUB_REPOSITORY" "$BUILD_COMMIT"
+            printf '\n```text\n'
+            cat build-manifest.txt SHA256SUMS
+            printf '```\n'
+          } > ../notes.md
+          printf 'tag=odroidn2/%s\n' "$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Generate Provenance Attestation
+        uses: actions/attest@v4
+        with:
+          subject-path: 'release/*'
+
+      - name: Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ steps.notes.outputs.tag }}
+          commit: ${{ github.sha }}
+          name: ODROID N2+ Armbian ${{ inputs.release_version }}
+          makeLatest: false
+          prerelease: false
+          draft: false
+          allowUpdates: true
+          replacesArtifacts: true
+          immutableCreate: true
+          artifactErrorsFailBuild: true
+          artifacts: 'release/*'
+          bodyFile: notes.md
+          token: ${{ github.token }}
